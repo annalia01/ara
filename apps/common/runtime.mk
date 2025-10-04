@@ -1,11 +1,4 @@
-# =====================================================================
-# runtime.mk – Ara Runtime Configuration (GCC-only version)
-# Author: [Tuo Nome]
-# Date: [oggi]
-# ---------------------------------------------------------------------
-# Questa versione forza l'uso di GCC per tutte le build (no LLVM),
-# mantenendo compatibilità con Spike e QuestaSim.
-# =====================================================================
+
 
 # --- CUSTOM CONFIGURATION: usa sempre GCC ---
 COMPILER = gcc

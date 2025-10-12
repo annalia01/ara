@@ -19,14 +19,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef SPIKE
-#include "util.h"
+
 #include <stdio.h>
-#elif defined ARA_LINUX
-#include <stdio.h>
-#else
-#include "printf.h"
-#endif
+
 
 int main() {
   printf("Ariane says Hello!\n");

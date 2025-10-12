@@ -42,17 +42,22 @@ resultpath     ?= results
 library        ?= work
 # dpi library
 dpi_library    ?= work-dpi
-
+# verilator library
+veril_library  ?= $(buildpath)/verilator
+# verilator path
+veril_path     ?= $(abspath $(INSTALL_DIR)/verilator/bin)
+# verilator top-level
+veril_top      ?= ara_tb_verilator
 # Top level module to compile
 top_level      ?= ara_tb
 # Questa version
 ifeq ($(vcd_dump), 1)
   questa_version ?= 2019.3
 else
-  questa_version ?= 2020.4
+  questa_version ?= 2021.3
 endif
 # QuestaSim command
-questa_cmd     ?= vsim
+questa_cmd     ?= questa-$(questa_version)
 # QuestaSim arguments
 questa_args    ?=
 # Path to the binaries
@@ -141,7 +146,7 @@ apply-patches: patches
 .PHONY: lib
 lib: $(buildpath) $(buildpath)/$(library)
 $(buildpath)/$(library):
-	cd $(buildpath) &&  vlib $(library) && vmap $(library) $(library)
+	cd $(buildpath) && vlib $(library) && vmap $(library) $(library)
 
 # Compilation
 .PHONY: compile
@@ -149,7 +154,7 @@ compile: dpi lib $(buildpath) bender $(buildpath)/compile_$(config).tcl
 $(buildpath)/compile_$(config).tcl: $(config_file) Makefile ../Bender.yml $(shell find src -type f) $(shell find ../config -type f) $(shell find include -type f) $(shell find tb -type f) $(shell find deps -type f)
 	$(BENDER) script vsim --vlog-arg="$(vlog_args)" $(bender_targs_simc) $(bender_defs) > $(buildpath)/compile_$(config).tcl
 	echo "exit" >> $(buildpath)/compile_$(config).tcl
-	cd $(buildpath) && $(questa_cmd) vsim -work $(library) -c -do compile_$(config).tcl
+	cd $(buildpath) && vsim -work $(library) -c -do compile_$(config).tcl
 	# Rename the file if compilation did not succeed
 	if [ `cat $(buildpath)/transcript | grep "\*\* Error" | wc -l` -ne 0 ]; then mv $(buildpath)/compile_$(config).tcl $(buildpath)/compile_$(config).tcl.ERROR; fi
 
@@ -163,7 +168,7 @@ sim: compile
 .PHONY: simc
 simc: compile
 	cd $(buildpath) && \
-	vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
+    vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
 	./scripts/return_status.sh $(buildpath)/transcript
 
 # RISC-V Tests simulation
@@ -171,10 +176,94 @@ APPS_DIR := $(abspath $(ROOT_DIR)/../apps)
 TESTS_DIR := $(APPS_DIR)/riscv-tests/isa
 include $(APPS_DIR)/common/riscv_tests.mk
 
+tests := $(ara_tests) $(cva6_tests)
 
+# Verilator
+.PHONY: verilate
+verilate: $(buildpath) bender $(veril_library)/V$(veril_top)
+
+$(veril_library)/V$(veril_top): $(config_file) Makefile ../Bender.yml $(shell find src -type f) $(shell find ../config -type f) $(shell find include -type f) $(shell find tb -type f) $(shell find deps -type f)
+	rm -rf $(veril_library); mkdir -p $(veril_library)
+	$(BENDER) script verilator $(bender_targs_veril) $(bender_defs_veril) > $(veril_library)/bender_script_$(config)
+# Verilate the design
+	$(veril_path)/verilator -f $(veril_library)/bender_script_$(config)           \
+  -GNrLanes=$(nr_lanes)                                                         \
+  -GVLEN=$(vlen)                                                                \
+  -O3                                                                           \
+  --hierarchical \
+  -Wno-fatal                                                                    \
+  -Wno-PINCONNECTEMPTY                                                          \
+  -Wno-BLKANDNBLK                                                               \
+  -Wno-CASEINCOMPLETE                                                           \
+  -Wno-CMPCONST                                                                 \
+  -Wno-LATCH                                                                    \
+  -Wno-LITENDIAN                                                                \
+  -Wno-UNOPTFLAT                                                                \
+  -Wno-UNPACKED                                                                 \
+  -Wno-UNSIGNED                                                                 \
+  -Wno-WIDTH                                                                    \
+  -Wno-WIDTHCONCAT                                                              \
+  -Wno-ENUMVALUE                                                                \
+  -Wno-COMBDLY                                                                  \
+  tb/verilator/waiver.vlt                                                       \
+  --Mdir $(veril_library)                                                       \
+  -Itb/dpi                                                                      \
+  --compiler clang                                                              \
+  -CFLAGS "-DTOPLEVEL_NAME=$(veril_top)"                                        \
+  -CFLAGS "-DNR_LANES=$(nr_lanes)"                                              \
+  -CFLAGS -I$(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_memutil_dpi/cpp       \
+  -CFLAGS -I$(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_memutil_verilator/cpp \
+  -CFLAGS -I$(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_simutil_verilator/cpp \
+  $(CLANG_CXXFLAGS)                                                             \
+  -LDFLAGS "-lelf"                                                              \
+  $(CLANG_LDFLAGS)                                                              \
+  --exe                                                                         \
+  $(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_memutil_dpi/cpp/*.cc            \
+  $(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_memutil_verilator/cpp/*.cc      \
+  $(ROOT_DIR)/tb/verilator/lowrisc_dv_verilator_simutil_verilator/cpp/*.cc      \
+  $(ROOT_DIR)/tb/verilator/ara_tb.cpp                                           \
+  --cc                                                                          \
+  $(if $(trace),--trace-fst -Wno-INSECURE,)                                     \
+  --top-module $(veril_top) &&                                                  \
+	cd $(veril_library) && OBJCACHE='' make -j4 -f V$(veril_top).mk
+
+# Simulation
+.PHONY: simv
+simv:
+	$(veril_library)/V$(veril_top) $(if $(trace),-t,) -l ram,$(app_path)/$(app),elf
+
+.PHONY: riscv_tests_simv
+riscv_tests_simv: $(tests)
+
+$(tests): rv%: $(app_path)/rv%
+	$(veril_library)/V$(veril_top) $(if $(trace),-t,) -l ram,$<,elf &> $(buildpath)/$@.trace
+
+# Lint
+.PHONY: lint spyglass/tmp/files
+
+SNPS_SG ?= spyglass-2022.06
+lint: spyglass/tmp/files spyglass/sdc/func.sdc spyglass/scripts/run_lint.tcl
+	cd spyglass; $(SNPS_SG) sg_shell -tcl scripts/run_lint.tcl
+
+spyglass/tmp/files: $(bender)
+	mkdir -p spyglass/tmp
+	$(BENDER) script verilator $(bender_targs_spyglass) $(bender_defs) --define SPYGLASS > spyglass/tmp/files
+
+# DPIs
+.PHONY: dpi
+dpi: $(buildpath)/$(dpi_library)/ara_dpi.so
+
+$(buildpath)/$(dpi_library)/%.o: tb/dpi/%.cc
+	mkdir -p $(buildpath)/$(dpi_library)
+	$(CXX) -shared -fPIC -std=c++11 -Bsymbolic -c $< -I$(VERILATOR_INCLUDE) -I$(INSTALL_DIR)/riscv-isa-sim/include -o $@
+
+$(buildpath)/$(dpi_library)/ara_dpi.so: $(dpi)
+	mkdir -p $(buildpath)/$(dpi_library)
+	$(CXX) -shared -m64 -o $(buildpath)/$(dpi_library)/ara_dpi.so $?
 
 # Clean targets
 .PHONY: clean
 clean:
 	rm -rf $(buildpath)
 	rm -f  $(BENDER)
+

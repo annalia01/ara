@@ -42,22 +42,17 @@ resultpath     ?= results
 library        ?= work
 # dpi library
 dpi_library    ?= work-dpi
-# verilator library
-veril_library  ?= $(buildpath)/verilator
-# verilator path
-veril_path     ?= $(abspath $(INSTALL_DIR)/verilator/bin)
-# verilator top-level
-veril_top      ?= ara_tb_verilator
+
 # Top level module to compile
 top_level      ?= ara_tb
 # Questa version
 ifeq ($(vcd_dump), 1)
   questa_version ?= 2019.3
 else
-  questa_version ?= 2021.3
+  questa_version ?= 2020.4
 endif
 # QuestaSim command
-questa_cmd     ?= questa-$(questa_version)
+questa_cmd     ?= vsim
 # QuestaSim arguments
 questa_args    ?=
 # Path to the binaries
@@ -146,7 +141,7 @@ apply-patches: patches
 .PHONY: lib
 lib: $(buildpath) $(buildpath)/$(library)
 $(buildpath)/$(library):
-	cd $(buildpath) && $(questa_cmd) vlib $(library) && $(questa_cmd) vmap $(library) $(library)
+	cd $(buildpath) &&  vlib $(library) && vmap $(library) $(library)
 
 # Compilation
 .PHONY: compile
@@ -162,13 +157,13 @@ $(buildpath)/compile_$(config).tcl: $(config_file) Makefile ../Bender.yml $(shel
 .PHONY: sim
 sim: compile
 	cd $(buildpath) && \
-	$(questa_cmd) vsim $(questa_args) $(library).$(top_level) -do ../scripts/run$(ideal).tcl
+	vsim $(questa_args) $(library).$(top_level) -do ../scripts/run$(ideal).tcl
 	./scripts/return_status.sh $(buildpath)/transcript
 
 .PHONY: simc
 simc: compile
 	cd $(buildpath) && \
-	$(questa_cmd) vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
+	vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
 	./scripts/return_status.sh $(buildpath)/transcript
 
 # RISC-V Tests simulation

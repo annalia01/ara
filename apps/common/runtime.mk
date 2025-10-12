@@ -84,13 +84,7 @@ RISCV_SIM_MOD_OPT ?= --isa=$(RISCV_ARCH)_zfh --varch="vlen:$(vlen_spike),elen:64
 PYTHON ?= python3
 
 # Defines
-ENV_DEFINES ?=
-ifeq ($(LINUX),1)
-ENV_DEFINES += -DARA_LINUX=1
-endif
-ifeq ($(vcd_dump),1)
-ENV_DEFINES += -DVCD_DUMP=1
-endif
+
 MAKE_DEFINES = -DNR_LANES=$(nr_lanes) -DVLEN=$(vlen)
 DEFINES += $(ENV_DEFINES) $(MAKE_DEFINES)
 

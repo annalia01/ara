@@ -146,7 +146,7 @@ apply-patches: patches
 .PHONY: lib
 lib: $(buildpath) $(buildpath)/$(library)
 $(buildpath)/$(library):
-	cd $(buildpath) && $(questa_cmd) vlib $(library) && $(questa_cmd) vmap $(library) $(library)
+	cd $(buildpath) && vlib $(library) && vmap $(library) $(library)
 
 # Compilation
 .PHONY: compile
@@ -154,7 +154,7 @@ compile: dpi lib $(buildpath) bender $(buildpath)/compile_$(config).tcl
 $(buildpath)/compile_$(config).tcl: $(config_file) Makefile ../Bender.yml $(shell find src -type f) $(shell find ../config -type f) $(shell find include -type f) $(shell find tb -type f) $(shell find deps -type f)
 	$(BENDER) script vsim --vlog-arg="$(vlog_args)" $(bender_targs_simc) $(bender_defs) > $(buildpath)/compile_$(config).tcl
 	echo "exit" >> $(buildpath)/compile_$(config).tcl
-	cd $(buildpath) && $(questa_cmd) vsim -work $(library) -c -do compile_$(config).tcl
+	cd $(buildpath) && vsim -work $(library) -c -do compile_$(config).tcl
 	# Rename the file if compilation did not succeed
 	if [ `cat $(buildpath)/transcript | grep "\*\* Error" | wc -l` -ne 0 ]; then mv $(buildpath)/compile_$(config).tcl $(buildpath)/compile_$(config).tcl.ERROR; fi
 
@@ -162,13 +162,13 @@ $(buildpath)/compile_$(config).tcl: $(config_file) Makefile ../Bender.yml $(shel
 .PHONY: sim
 sim: compile
 	cd $(buildpath) && \
-	$(questa_cmd) vsim $(questa_args) $(library).$(top_level) -do ../scripts/run$(ideal).tcl
+	vsim $(questa_args) $(library).$(top_level) -do ../scripts/run$(ideal).tcl
 	./scripts/return_status.sh $(buildpath)/transcript
 
 .PHONY: simc
 simc: compile
 	cd $(buildpath) && \
-	$(questa_cmd) vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
+    vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
 	./scripts/return_status.sh $(buildpath)/transcript
 
 # RISC-V Tests simulation

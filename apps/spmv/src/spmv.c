@@ -17,8 +17,8 @@
 // Author: Chi Zhang, ETH Zurich <chizhang@iis.ee.ethz.ch>
 
 #include "../inc/spmv.h"
-#include "../../../common/runtime.h"
-#include "../../../common/util.h"
+#include "../../common/runtime.h"
+#include "../../common/util.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>

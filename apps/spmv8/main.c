@@ -20,8 +20,8 @@
 #include <string.h>
 
 #include "inc/spmv.h"
-#include "../../common/runtime.h"
-#include "../../common/util.h"
+#include "../common/runtime.h"
+#include "../common/util.h"
 
 
 #include <stdio.h>
@@ -32,9 +32,9 @@ extern uint64_t R;
 extern uint64_t C;
 extern uint64_t NZ;
 
-extern int32_t CSR_PROW[]
+extern uint8_t CSR_PROW[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
-extern int32_t CSR_INDEX[]
+extern uint8_t CSR_INDEX[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
 extern uint8_t CSR_DATA[] __attribute__((aligned(4 * NR_LANES), section(".l2")));
 extern uint8_t CSR_IN_VECTOR[]

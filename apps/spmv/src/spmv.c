@@ -16,110 +16,59 @@
 
 // Author: Chi Zhang, ETH Zurich <chizhang@iis.ee.ethz.ch>
 
-#include "spmv.h"
-#include "runtime.h"
-#include "util.h"
+#include "../inc/spmv.h"
+#include "../../../common/runtime.h"
+#include "../../../common/util.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
-#ifndef SPIKE
-#include "printf.h"
-#else
 #include <stdio.h>
-#endif
+
 
 #define SLICE_SIZE 128
 #define DATA_BYTE 8 // double type has 8 bytes
 
 void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
                     double *CSR_DATA, double *IN_VEC, double *OUT_VEC) {
+  // Pre-carica la riga 0
+  int32_t len   = CSR_PROW[1] - CSR_PROW[0];
+  double *data  = CSR_DATA  + CSR_PROW[0];
+  int32_t *index= CSR_INDEX + CSR_PROW[0];
+
   for (int i = 0; i < N_ROW; ++i) {
-    int32_t len = CSR_PROW[i + 1] - CSR_PROW[i];
-    double *data = CSR_DATA + CSR_PROW[i];
-    int32_t *index = CSR_INDEX + CSR_PROW[i];
-    double *_dst_ = OUT_VEC + i - 1;
+    // --- reset accumulatore ---
+    asm volatile("vsetvli zero, %0, e64, m4, ta, ma" :: "r"(1));
+    asm volatile("vmv.v.i v16, 0");
 
-    if (i % 2 == 0) {
-      // clear register file
-      asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(1));
-      asm volatile("vmv.v.i v16,  0");
-      asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(SLICE_SIZE));
-      asm volatile("vmv.v.i v12,  0");
+    // --- loop vettoriale dinamico ---
+    while (len > 0) {
+      size_t vl;
+      asm volatile("vsetvli %0, %1, e64, m4, ta, ma"
+                   : "=r"(vl) : "r"(len));
 
-      // SpVV
-      while (len > SLICE_SIZE) {
-        asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(SLICE_SIZE));
-        asm volatile("vle64.v v4, (%0)" ::"r"(data));          // fetch entries
-        asm volatile("vle32.v v8, (%0)" ::"r"(index));         // fetch indices
-        asm volatile("vloxei32.v v0, (%0), v8" ::"r"(IN_VEC)); // load data
-        asm volatile("vfmul.vv v12, v4, v0");      // vector multiply
-        asm volatile("vfredsum.vs v16, v12, v16"); // reduction
-        len = len - SLICE_SIZE;
-        data = data + SLICE_SIZE;
-        index = index + SLICE_SIZE;
-      }
-      if (len > 0) {
-        asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(len));
-        asm volatile("vle64.v v4, (%0)" ::"r"(data));          // fetch entries
-        asm volatile("vle32.v v8, (%0)" ::"r"(index));         // fetch indices
-        asm volatile("vloxei32.v v0, (%0), v8" ::"r"(IN_VEC)); // load data
-        asm volatile("vfmul.vv v12, v4, v0");      // vector multiply
-        asm volatile("vfredsum.vs v16, v12, v16"); // reduction
-      }
-      // store previous data
-      if (i != 0) {
-        double tmp;
-        asm volatile("vfmv.f.s %0, v24" : "=f"(tmp));
-        *_dst_ = tmp;
-      }
+      asm volatile("vle64.v v4, (%0)" :: "r"(data));   // carica valori
+      asm volatile("vle32.v v8, (%0)" :: "r"(index));  // carica indici
+      asm volatile("vloxei32.v v0, (%0), v8" :: "r"(IN_VEC)); // gather da x
+      asm volatile("vfmul.vv v12, v4, v0");            // moltiplicazione
+      asm volatile("vfredsum.vs v16, v12, v16");       // riduzione
 
-    } else {
-      // clear register file
-      asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(1));
-      asm volatile("vmv.v.i v24,  0");
-      asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(SLICE_SIZE));
-      asm volatile("vmv.v.i v12,  0");
-
-      // SpVV
-      while (len > SLICE_SIZE) {
-        asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(SLICE_SIZE));
-        asm volatile("vle64.v v4, (%0)" ::"r"(data));          // fetch entries
-        asm volatile("vle32.v v8, (%0)" ::"r"(index));         // fetch indices
-        asm volatile("vloxei32.v v0, (%0), v8" ::"r"(IN_VEC)); // load data
-        asm volatile("vfmul.vv v12, v4, v0");      // vector multiply
-        asm volatile("vfredsum.vs v24, v12, v24"); // reduction
-        len = len - SLICE_SIZE;
-        data = data + SLICE_SIZE;
-        index = index + SLICE_SIZE;
-      }
-      if (len > 0) {
-        asm volatile("vsetvli zero, %0, e64, m2, ta, ma" ::"r"(len));
-        asm volatile("vle64.v v4, (%0)" ::"r"(data));          // fetch entries
-        asm volatile("vle32.v v8, (%0)" ::"r"(index));         // fetch indices
-        asm volatile("vloxei32.v v0, (%0), v8" ::"r"(IN_VEC)); // load data
-        asm volatile("vfmul.vv v12, v4, v0");      // vector multiply
-        asm volatile("vfredsum.vs v24, v12, v24"); // reduction
-      }
-      // store previous data
-      double tmp;
-      asm volatile("vfmv.f.s %0, v16" : "=f"(tmp));
-      *_dst_ = tmp;
+      data  += vl;
+      index += vl;
+      len   -= vl;
     }
-  }
 
-  // store the last value
-  double *_dst_ = OUT_VEC + N_ROW - 1;
-  if (N_ROW % 2 == 0) // even
-  {
-    double tmp;
-    asm volatile("vfmv.f.s %0, v24" : "=f"(tmp));
-    *_dst_ = tmp;
-  } else { // odd
+    // --- store risultato riga corrente ---
     double tmp;
     asm volatile("vfmv.f.s %0, v16" : "=f"(tmp));
-    *_dst_ = tmp;
+    OUT_VEC[i] = tmp;
+
+    // --- pre-carica riga successiva ---
+    if (i + 1 < N_ROW) {
+      len   = CSR_PROW[i + 2] - CSR_PROW[i + 1];
+      data  = CSR_DATA  + CSR_PROW[i + 1];
+      index = CSR_INDEX + CSR_PROW[i + 1];
+    }
   }
 }
 

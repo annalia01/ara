@@ -21,8 +21,8 @@
 #include <string.h>
 
 #include "/inc/fmatmul.h"
-#include "../../common/runtime.h"
-#include "../../common/util.h"
+#include "../common/runtime.h"
+#include "../common/util.h"
 
 #include <stdio.h>
 #define NR_LANES 8

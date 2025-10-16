@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "/inc/fmatmul.h"
+#include "inc/fmatmul.h"
 #include "../common/runtime.h"
 #include "../common/util.h"
 

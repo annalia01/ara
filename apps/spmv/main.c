@@ -20,16 +20,13 @@
 #include <string.h>
 
 #include "inc/spmv.h"
-#include "../common/runtime.h"
-#include "../common/util.h"
+#include "../../common/runtime.h"
+#include "../../common/util.h"
 
-#ifdef SPIKE
+
 #include <stdio.h>
-#elif defined ARA_LINUX
-#include <stdio.h>
-#else
-#include "printf.h"
-#endif
+
+#define NR_LANES 8
 
 extern uint64_t R;
 extern uint64_t C;

@@ -28,12 +28,7 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
 int spmv_verify(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
                 double *CSR_DATA, double *IN_VEC, double *OUT_VEC);
                 
-void spmv_csr_idx32_uint8(int32_t N_ROW, uint8_t *CSR_PROW, uint8_t *CSR_INDEX,
-                    uint8_t *CSR_DATA, uint8_t *IN_VEC, uint8_t *OUT_VEC);
 
-int spmv_verify_uint8(int32_t N_ROW, uint8_t *CSR_PROW, uint8_t *CSR_INDEX,
-                uint8_t *CSR_DATA, uint8_t *IN_VEC, uint8_t *OUT_VEC);                
-                
                 
 
 #endif

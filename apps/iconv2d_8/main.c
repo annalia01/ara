@@ -23,9 +23,9 @@
 #include <string.h>
 
 #include "inc/iconv2d.h"
-#include "../../common/runtime.h"
+#include "../common/runtime.h"
 
-#include "../../common/util.h"
+#include "../common/util.h"
 
 void init_dataset();
 #define NR_LANES 8

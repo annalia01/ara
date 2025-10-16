@@ -19,9 +19,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "kernel/spmv.h"
-#include "runtime.h"
-#include "util.h"
+#include "inc/spmv.h"
+#include "../common/runtime.h"
+#include "../common/util.h"
 
 #ifdef SPIKE
 #include <stdio.h>

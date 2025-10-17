@@ -54,6 +54,20 @@ int verify_matrix(float *result, float *gold, size_t R, size_t C,
   return 0;
 }
 
+#include <stdint.h>
+
+static inline uint64_t read_mcycle(void) {
+    uint64_t value;
+    asm volatile ("csrr %0, cycle" : "=r"(value));
+    return value;
+}
+
+static inline uint64_t read_minstret(void) {
+    uint64_t value;
+    asm volatile ("csrr %0, instret" : "=r"(value));
+    return value;
+}
+
 int main() {
   printf("\n");
   printf("=============\n");
@@ -62,12 +76,9 @@ int main() {
   printf("\n");
   printf("\n");
 
-#ifdef VCD_DUMP
-  // Measure only the full-size matmul
-  for (uint64_t s = M; s <= M; s *= 2) {
-#else
+
   for (uint64_t s = 4; s <= M; s *= 2) {
-#endif
+
     printf("\n");
     printf("------------------------------------------------------------\n");
     printf("Calculating a (%d x %d) x (%d x %d) matrix multiplication...\n", s,
@@ -75,20 +86,40 @@ int main() {
     printf("------------------------------------------------------------\n");
     printf("\n");
 
-    // Matrices are initialized --> Start calculating
     printf("Calculating fmatmul...\n");
-    start_timer();
-    fmatmul(c, a, b, s, s, s);
-    stop_timer();
 
-    // Metrics
-    int64_t runtime = get_timer();
-    float performance = 2.0 * s * s * s / runtime;
-    float utilization = 100 * performance / (2.0 * NR_LANES);
+// Leggi i CSR prima dell’esecuzione
+uint64_t start_mcycle = read_mcycle();
+uint64_t start_minstret = read_minstret();
 
-    printf("The execution took %d cycles.\n", runtime);
-    printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
-           performance, utilization);
+// Esegui il kernel
+start_timer();
+fmatmul(c, a, b, s, s, s);
+stop_timer();
+
+// Leggi i CSR dopo l’esecuzione
+uint64_t end_mcycle = read_mcycle();
+uint64_t end_minstret = read_minstret();
+
+// Calcola differenze
+uint64_t delta_mcycle = end_mcycle - start_mcycle;
+uint64_t delta_minstret = end_minstret - start_minstret;
+
+// Calcola IPC
+double ipc = (double)delta_minstret / (double)delta_mcycle;
+
+// Metriche preesistenti
+int64_t runtime = get_timer();
+float performance = 2.0 * s * s * s / runtime;
+float utilization = 100 * performance / (2.0 * NR_LANES);
+
+// Stampa risultati
+printf("The execution took %ld cycles (timer).\n", runtime);
+printf("The execution took %lu cycles (CSR mcycle).\n", delta_mcycle);
+printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
+printf("IPC = %.3f\n", ipc);
+printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
+       performance, utilization);
 
     // Verify the result only for s == M (to keep it simple)
     if (s == M) {

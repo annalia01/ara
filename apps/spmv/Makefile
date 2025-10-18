@@ -1,6 +1,6 @@
 # ==== Toolchain e percorsi ====
 CC     := riscv64-unknown-elf-gcc
-SPIKE  := /home/annalia/RISC-V/rv64/spike/bin/spike
+SPIKE  := /home/annalia/DoE/install/riscv-isa-sim/bin/spike
 PK     := /home/annalia/RISC-V/rv64/pk/riscv64-unknown-elf/bin/pk
 
 # ==== ISA/ABI ====
@@ -9,7 +9,7 @@ ABI    := lp64
 
 # ==== Flag minimi ====
 CFLAGS := -O2 -march=$(MARCH) -mabi=$(ABI)
-
+VLEN ?= 256
 # ==== Sorgenti/target ====
 TARGET := main.elf
 SRCS   := main.c src/spmv.c ../common/util.c inc/dataset.c
@@ -22,7 +22,7 @@ $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 run: $(TARGET)
-	$(SPIKE) --isa=$(MARCH) $(PK) ./$(TARGET)
+	$(SPIKE) --isa=$(MARCH) --varch="vlen:$(VLEN),elen:64" $(PK) ./$(TARGET)
 
 clean:
 	$(RM) $(TARGET)

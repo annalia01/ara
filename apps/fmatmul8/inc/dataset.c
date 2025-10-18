@@ -2,14 +2,14 @@
 #include "../../common/runtime.h"
 #define NR_LANES 8
 // Definizione delle dimensioni delle matrici
-uint64_t M = 128;
-uint64_t N = 128;
-uint64_t P = 128;
+uint64_t M = 32;
+uint64_t N = 32;
+uint64_t P = 32;
 
-uint8_t a[128 * 128] __attribute__((aligned(32 * NR_LANES), section(".l2")));
-uint8_t b[128 * 128] __attribute__((aligned(32 * NR_LANES), section(".l2")));
-uint8_t c[128 * 128] __attribute__((aligned(32 * NR_LANES), section(".l2")));
-uint8_t g[128 * 128] __attribute__((aligned(32 * NR_LANES), section(".l2")));
+uint8_t a[32 * 32] __attribute__((aligned(32 * NR_LANES), section(".l2")));
+uint8_t b[32 * 32] __attribute__((aligned(32 * NR_LANES), section(".l2")));
+uint8_t c[32 * 32] __attribute__((aligned(32 * NR_LANES), section(".l2")));
+uint8_t g[32 * 32] __attribute__((aligned(32 * NR_LANES), section(".l2")));
 
 void init_dataset() {
   for (uint64_t i = 0; i < M; ++i) {

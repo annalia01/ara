@@ -31,7 +31,7 @@ void fmatmul_4x4_uint8(uint8_t *c, const uint8_t *a, const uint8_t *b,
                  unsigned long int m, unsigned long int n, unsigned long int p);
 void fmatmul_vec_4x4_uint8(uint8_t *c, const uint8_t *a, const uint8_t *b,
                      unsigned long int n, unsigned long int p);
-
+void fmatmul_vec_4x4_slice_init()
 #define DELTA 0.000001
 
 extern int64_t event_trigger;

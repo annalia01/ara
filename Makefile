@@ -56,7 +56,7 @@ git-submodules:
 	git submodule update --init --recursive
 	git submodule update --init --recursive --checkout -- $(ROOT_DIR)/toolchain/riscv-gnu-toolchain
 	git submodule update --init --recursive --checkout -- $(ROOT_DIR)/toolchain/newlib
-	
+	git submodule update --init --recursive --checkout -- $(ROOT_DIR)/toolchain/riscv-llvm
 
 # Default target
 .PHONY: git-submodules

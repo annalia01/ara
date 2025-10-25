@@ -95,11 +95,13 @@ void fmatmul_vec_4x4_uint8(uint8_t *c, const uint8_t *a, const uint8_t *b,
     asm volatile("vmacc.vx v12, %0, v24" :: "r"(b3));
   }
 
-  // Scrivi il blocco 4×4 di C
-  asm volatile("vse8.v v0, (%0)" :: "r"(c + 0*P));
-  asm volatile("vse8.v v4, (%0)" :: "r"(c + 1*P));
-  asm volatile("vse8.v v8, (%0)" :: "r"(c + 2*P));
-  asm volatile("vse8.v v12, (%0)" :: "r"(c + 3*P));
+  unsigned long stride_c = P * sizeof(uint8_t);
+
+asm volatile("vsse8.v v0,  (%0), %1" :: "r"(c + 0), "r"(stride_c));
+asm volatile("vsse8.v v4,  (%0), %1" :: "r"(c + 1), "r"(stride_c));
+asm volatile("vsse8.v v8,  (%0), %1" :: "r"(c + 2), "r"(stride_c));
+asm volatile("vsse8.v v12, (%0), %1" :: "r"(c + 3), "r"(stride_c));
+
 }
 
 

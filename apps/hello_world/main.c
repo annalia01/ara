@@ -25,6 +25,6 @@
 
 int main() {
   printf("Ariane says Hello!\n");
-  printf("Prova!\n");
+  printf("Prova, funziona per favore!\n");
   return 0;
 }

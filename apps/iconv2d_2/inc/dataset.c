@@ -23,7 +23,7 @@ int32_t f[9] __attribute__((aligned(32))) = {
 
 // Output: 3x3, inizializzato a 0
 int32_t o[9] __attribute__((aligned(32))) = {0};
-
+int c;
 // Golden output: atteso tutto -6
 int32_t golden_o[9] __attribute__((aligned(32))) = {0};
 void init_dataset() {

@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "../../../common/runtime.h"
+#include "../../common/runtime.h"
 
 int64_t M __attribute__((aligned(32))) = 5;
 int64_t N __attribute__((aligned(32))) = 5;

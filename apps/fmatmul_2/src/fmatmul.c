@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
-#define ASSUME_ALIGNED_64(p) ((float*)__builtin_assume_aligned((p), 64))
+#define ASSUME_ALIGNED_64(p) ((float*)__builtin_assume_aligned((p), 16))
 
 
 
@@ -25,7 +25,7 @@ void fmatmul(float * __restrict c_,
   const float * __restrict b = ASSUME_ALIGNED_64(b_);
 
     fmatmul_4x4(c, a, b, M, N, P);
-  
+
 }
 
 // ============================================================================
@@ -76,7 +76,7 @@ void fmatmul_vec_4x4_slice_init() {
 void fmatmul_vec_4x4(float *c, const float *a, const float *b,
                        const unsigned long int N, const unsigned long int P) {
   unsigned long stride_a = N * sizeof(float);
-  
+
 
   for (unsigned long k = 0; k < N; k++) {
     // Carica colonna k di A (4 elementi con stride N)
@@ -88,7 +88,7 @@ void fmatmul_vec_4x4(float *c, const float *a, const float *b,
     float b2 = b[k * P + 2];
     float b3 = b[k * P + 3];
 
-    // Outer product: colonna(A) × scalari di B
+
     asm volatile("vfmacc.vf v0, %0, v24" :: "f"(b0));
     asm volatile("vfmacc.vf v4, %0, v24" :: "f"(b1));
     asm volatile("vfmacc.vf v8, %0, v24" :: "f"(b2));
@@ -103,5 +103,3 @@ asm volatile("vsse32.v v8,  (%0), %1" :: "r"(c + 2), "r"(stride_c));
 asm volatile("vsse32.v v12, (%0), %1" :: "r"(c + 3), "r"(stride_c));
 
 }
-
-

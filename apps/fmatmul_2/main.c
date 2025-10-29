@@ -24,8 +24,12 @@
 #include "../common/runtime.h"
 #include "../common/util.h"
 
+#ifdef SPIKE
 #include <stdio.h>
-#define NR_LANES 8
+#define NR_LANES 4
+#else
+#include "../common/printf.h"
+#endif
 // Define Matrix dimensions:
 // C = AB with A=[MxN], B=[NxP], C=[MxP]
 extern uint64_t M;
@@ -56,17 +60,14 @@ int verify_matrix(float *result, float *gold, size_t R, size_t C,
 
 #include <stdint.h>
 
-static inline uint64_t read_mcycle(void) {
-    uint64_t value;
-    asm volatile ("csrr %0, cycle" : "=r"(value));
+
+inline int64_t read_minstret(void) {
+    int64_t value;
+    asm volatile ("csrr %0, instret"
+                  : "=r"(value));
     return value;
 }
 
-static inline uint64_t read_minstret(void) {
-    uint64_t value;
-    asm volatile ("csrr %0, instret" : "=r"(value));
-    return value;
-}
 
 int main() {
   printf("\n");
@@ -87,10 +88,9 @@ int main() {
     printf("\n");
 
     printf("Calculating fmatmul...\n");
-
-// Leggi i CSR prima dell’esecuzione
-uint64_t start_mcycle = read_mcycle();
-uint64_t start_minstret = read_minstret();
+#ifdef SPIKE
+int64_t start_minstret = read_minstret();
+#endif
 
 // Esegui il kernel
 start_timer();
@@ -98,15 +98,11 @@ fmatmul(c, a, b, s, s, s);
 stop_timer();
 
 // Leggi i CSR dopo l’esecuzione
-uint64_t end_mcycle = read_mcycle();
-uint64_t end_minstret = read_minstret();
-
-// Calcola differenze
-uint64_t delta_mcycle = end_mcycle - start_mcycle;
+#ifdef SPIKE
+int64_t end_minstret = read_minstret();
 uint64_t delta_minstret = end_minstret - start_minstret;
+#endif
 
-// Calcola IPC
-double ipc = (double)delta_minstret / (double)delta_mcycle;
 
 // Metriche preesistenti
 int64_t runtime = get_timer();
@@ -115,9 +111,9 @@ float utilization = 100 * performance / (2.0 * NR_LANES);
 
 // Stampa risultati
 printf("The execution took %ld cycles (timer).\n", runtime);
-printf("The execution took %lu cycles (CSR mcycle).\n", delta_mcycle);
+#ifdef SPIKE
 printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
-printf("IPC = %.3f\n", ipc);
+#endif
 printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
        performance, utilization);
 
@@ -127,7 +123,7 @@ printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
       int error = verify_matrix(c, g, s, s, THRESHOLD);
       if (error != 0) {
         printf("Error code %d\n", error);
-        printf("c[%d]=%f\n", error, c[error]);
+        printf("c[%d]=%d\n", error, c[error]);
         return error;
       } else {
         printf("Passed.\n");

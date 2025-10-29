@@ -230,7 +230,7 @@ $(veril_library)/V$(veril_top): $(config_file) Makefile ../Bender.yml $(shell fi
 # Simulation
 .PHONY: simv
 simv:
-	$(veril_library)/V$(veril_top) $(if $(trace),-t,) -l ram,$(app_path)/$(app).elf
+	$(veril_library)/V$(veril_top) $(if $(trace),-t,) -l ram,$(app_path)/$(app),elf
 
 .PHONY: riscv_tests_simv
 riscv_tests_simv: $(tests)

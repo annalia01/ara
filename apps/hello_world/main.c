@@ -20,8 +20,8 @@
 #include <string.h>
 
 
-#include <stdio.h>
-
+//#include <stdio.h>
+#include "../common/printf.h"
 
 int main() {
   printf("Ariane says Hello!\n");

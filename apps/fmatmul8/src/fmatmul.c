@@ -1,4 +1,3 @@
-
 // Copyright 2020 ETH Zurich and University of Bologna.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,7 +24,7 @@ void fmatmul_uint8(uint8_t * __restrict c_,
   const uint8_t * __restrict b = ASSUME_ALIGNED_64(b_);
 
     fmatmul_4x4_uint8(c, a, b, M, N, P);
-  
+
 }
 
 // ============================================================================
@@ -76,7 +75,7 @@ void fmatmul_vec_4x4_slice_init() {
 void fmatmul_vec_4x4_uint8(uint8_t *c, const uint8_t *a, const uint8_t *b,
                        const unsigned long int N, const unsigned long int P) {
   unsigned long stride_a = N * sizeof(uint8_t);
-  
+
 
   for (unsigned long k = 0; k < N; k++) {
     // Carica colonna k di A (4 elementi con stride N)
@@ -103,5 +102,3 @@ asm volatile("vsse8.v v8,  (%0), %1" :: "r"(c + 2), "r"(stride_c));
 asm volatile("vsse8.v v12, (%0), %1" :: "r"(c + 3), "r"(stride_c));
 
 }
-
-

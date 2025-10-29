@@ -23,15 +23,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef SPIKE
 #include <stdio.h>
-
-
+#else
+#include "../common/printf.h"
+#endif
 #define SLICE_SIZE 128
 #define DATA_BYTE 8 // double type has 8 bytes
 
 void spmv_csr_idx32_uint8(int32_t N_ROW, uint8_t *CSR_PROW, uint8_t *CSR_INDEX,
                     uint8_t *CSR_DATA, uint8_t *IN_VEC, uint8_t *OUT_VEC) {
-                    int8_t debug_buf[7] __attribute__((aligned(16)));
+
   // Pre-carica la riga 0
   uint8_t len   = CSR_PROW[1] - CSR_PROW[0];
   uint8_t *data  = CSR_DATA  + CSR_PROW[0];
@@ -49,9 +51,9 @@ void spmv_csr_idx32_uint8(int32_t N_ROW, uint8_t *CSR_PROW, uint8_t *CSR_INDEX,
                    : "=r"(vl) : "r"(len));
 
       asm volatile("vle8.v v4, (%0)" :: "r"(data));   // carica valori
-     
+
       asm volatile("vle8.v v8, (%0)" :: "r"(index));  // carica indici
-         
+
       asm volatile("vloxei8.v v0, (%0), v8" :: "r"(IN_VEC)); // gather da x
       asm volatile("vmul.vv v12, v4, v0");            // moltiplicazione
       asm volatile("vredsum.vs v16, v12, v16");       // riduzione

@@ -23,9 +23,12 @@
 #include "inc/fmatmul.h"
 #include "../common/runtime.h"
 #include "../common/util.h"
-
+#ifdef SPIKE
 #include <stdio.h>
-#define NR_LANES 8
+#define NR_LANES 4
+#else
+#include "../common/printf.h"
+#endif
 // Define Matrix dimensions:
 // C = AB with A=[MxN], B=[NxP], C=[MxP]
 extern uint64_t M;
@@ -38,7 +41,7 @@ extern uint8_t c[] __attribute__((aligned(32 * NR_LANES), section(".l2")));
 // Gold results
 extern uint8_t g[] __attribute__((aligned(32 * NR_LANES), section(".l2")));
 
-#define THRESHOLD 0.001
+#define THRESHOLD 0
 
 // Verify the matrix
 int verify_matrix(uint8_t *result, uint8_t *gold, size_t R, size_t C,
@@ -54,11 +57,6 @@ int verify_matrix(uint8_t *result, uint8_t *gold, size_t R, size_t C,
   return 0;
 }
 
-static inline uint64_t read_mcycle(void) {
-    uint64_t value;
-    asm volatile ("csrr %0, cycle" : "=r"(value));
-    return value;
-}
 
 static inline uint64_t read_minstret(void) {
     uint64_t value;
@@ -85,35 +83,30 @@ int main() {
     printf("\n");
 
    // Leggi i CSR prima dell’esecuzione
-uint64_t start_mcycle = read_mcycle();
+#ifdef SPIKE
 uint64_t start_minstret = read_minstret();
-
+#endif
 // Esegui il kernel
 start_timer();
 fmatmul_uint8(c, a, b, s, s, s);
 stop_timer();
 
 // Leggi i CSR dopo l’esecuzione
-uint64_t end_mcycle = read_mcycle();
+#ifdef SPIKE
 uint64_t end_minstret = read_minstret();
-
-// Calcola differenze
-uint64_t delta_mcycle = end_mcycle - start_mcycle;
 uint64_t delta_minstret = end_minstret - start_minstret;
+#endif
 
-// Calcola IPC
-double ipc = (double)delta_minstret / (double)delta_mcycle;
 
-// Metriche preesistenti
 int64_t runtime = get_timer();
 float performance = 2.0 * s * s * s / runtime;
 float utilization = 100 * performance / (2.0 * NR_LANES);
 
 // Stampa risultati
 printf("The execution took %ld cycles (timer).\n", runtime);
-printf("The execution took %lu cycles (CSR mcycle).\n", delta_mcycle);
+#ifdef SPIKE
 printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
-printf("IPC = %.3f\n", ipc);
+#endif
 printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
        performance, utilization);
 

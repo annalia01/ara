@@ -127,7 +127,7 @@ printf("The performance is %f FLOP/cycle (%f%% utilization).\n",
       int error = verify_matrix(c, g, s, s, THRESHOLD);
       if (error != 0) {
         printf("Error code %d\n", error);
-        printf("c[%d]=%d\n", error, c[error]);
+        printf("c[%d]=%f\n", error, c[error]);
         return error;
       } else {
         printf("Passed.\n");

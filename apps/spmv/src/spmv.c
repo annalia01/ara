@@ -23,9 +23,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef SPIKE
 #include <stdio.h>
-
-
+#else
+#include "../common/printf.h"
+#endif
 #define SLICE_SIZE 128
 #define DATA_BYTE 8 // double type has 8 bytes
 

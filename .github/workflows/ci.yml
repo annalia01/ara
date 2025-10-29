@@ -332,7 +332,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        app:        [hello_world, imatmul, fmatmul, iconv2d, fconv2d, fconv3d, jacobi2d, dropout, fft, dwt, exp, softmax, dotproduct, fdotproduct, pathfinder, roi_align, lavamd]
+        app:        [hello_world, fmatmul_2, fmatmul8, iconv2d_2, iconv2d_8, spmv, spmv8]
         ara_config: [2_lanes, 4_lanes, 8_lanes, 16_lanes]
     needs: ["compile-ara", "compile-apps"]
     steps:

@@ -1,5 +1,3 @@
-
-
 // Copyright 2020 ETH Zurich and University of Bologna.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -19,16 +17,20 @@
 // Author: Matteo Perotti
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "inc/iconv2d.h"
 #include "../common/runtime.h"
 
 #include "../common/util.h"
+#ifdef SPIKE
+#define NR_LANES 4
+#include  <stdio.h>
+#else
+#include "../common/printf.h"
+#endif
 
 void init_dataset();
-#define NR_LANES 8
 // Define Matrix dimensions:
 // o = i ° f, with i=[MxN], f=[FxF], o=[MxN]
 // The filter is a square matrix, and F is odd
@@ -68,6 +70,12 @@ void print_matrix(int8_t const *matrix, uint64_t num_rows,
   }
 }
 
+static inline uint64_t read_minstret(void) {
+    uint64_t value;
+    asm volatile ("csrr %0, instret" : "=r"(value));
+    return value;
+}
+
 int main() {
   printf("\n");
   printf("=============\n");
@@ -78,6 +86,9 @@ int main() {
 
   // Call the main kernel, and measure cycles
   init_dataset();
+  #ifdef SPIKE
+  uint64_t start_minstret = read_minstret();
+  #endif
   start_timer();
   if (F == 3)
     iconv2d_3x3_uint8(o, i, f, M, N, F);
@@ -88,13 +99,19 @@ int main() {
   else
     printf("Error: the filter size is different from 3 or 5 or 7.\n");
   stop_timer();
-
+  #ifdef SPIKE
+  uint64_t end_minstret = read_minstret();
+  uint64_t delta_minstret = end_minstret - start_minstret;
+  #endif
   // Performance metrics
   int64_t runtime = get_timer();
   float performance = 2.0 * F * F * M * N / runtime;
   float utilization = 100 * performance / (2.0 * NR_LANES);
 
   printf("The execution took %d cycles.\n", runtime);
+  #ifdef SPIKE
+  printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
+  #endif
   printf("The performance is %f OP/cycle (%f%% utilization).\n", performance,
          utilization);
 print_matrix(o, M, N);

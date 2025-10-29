@@ -1,5 +1,3 @@
-
-
 // Copyright 2020 ETH Zurich and University of Bologna.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -19,7 +17,6 @@
 // Author: Matteo Perotti
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "inc/iconv2d.h"
@@ -28,7 +25,12 @@
 #include "../common/util.h"
 
 void init_dataset();
+#ifdef SPIKE
 #define NR_LANES 8
+#include <stdio.h>
+#else
+#include "../common/printf.h"
+#endif
 // Define Matrix dimensions:
 // o = i ° f, with i=[MxN], f=[FxF], o=[MxN]
 // The filter is a square matrix, and F is odd
@@ -39,7 +41,6 @@ extern int32_t i[] __attribute__((
 extern int32_t f[] __attribute__((aligned(4 * NR_LANES)));        // [ F*F ]
 extern int32_t o[] __attribute__((aligned(4 * NR_LANES)));        // [ M*N ]
 extern int32_t golden_o[] __attribute__((aligned(4 * NR_LANES))); // [ M*N ]
-// M, N, F defined in data.S
 extern int32_t M;
 extern int32_t N;
 extern int32_t F;
@@ -67,7 +68,11 @@ void print_matrix(int32_t const *matrix, uint64_t num_rows,
     printf("\n");
   }
 }
-
+static inline uint64_t read_minstret(void) {
+   uint64_t value;
+   asm volatile ("csrr %0, instret" : "=r"(value));
+   return value;
+}
 int main() {
   printf("\n");
   printf("=============\n");
@@ -78,6 +83,9 @@ int main() {
 
   // Call the main kernel, and measure cycles
   init_dataset();
+  #ifdef SPIKE
+  uint64_t start_minstret = read_minstret();
+  #endif
   start_timer();
   if (F == 3)
     iconv2d_3x3(o, i, f, M, N, F);
@@ -88,13 +96,19 @@ int main() {
   else
     printf("Error: the filter size is different from 3 or 5 or 7.\n");
   stop_timer();
-
+  #ifdef SPIKE
+  uint64_t end_minstret = read_minstret();
+  uint64_t delta_minstret = end_minstret - start_minstret;
+  #endif
   // Performance metrics
   int64_t runtime = get_timer();
   float performance = 2.0 * F * F * M * N / runtime;
   float utilization = 100 * performance / (2.0 * NR_LANES);
 
   printf("The execution took %d cycles.\n", runtime);
+  #ifdef SPIKE
+  printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
+  #endif
   printf("The performance is %f OP/cycle (%f%% utilization).\n", performance,
          utilization);
 print_matrix(o, M, N);

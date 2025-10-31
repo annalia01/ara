@@ -1,7 +1,7 @@
 #define R 500
 #define C 500
 #define NNZ 2399
-const double val[2399] = {
+const float val[2399] = {
   566,
   508,
   850,
@@ -4803,7 +4803,7 @@ const int idx[2399] = {
   212,
   496
 };
-const double x[500] = {
+const float x[500] = {
   737,
   519,
   538,
@@ -5808,7 +5808,7 @@ const int ptr[501] = {
   2394,
   2399
 };
-const double verify_data[500] = {
+const float verify_data[500] = {
   1636962,
   1714376,
   142636,

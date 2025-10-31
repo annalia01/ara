@@ -38,10 +38,10 @@ extern int32_t CSR_PROW[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
 extern int32_t CSR_INDEX[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
-extern double CSR_DATA[] __attribute__((aligned(4 * NR_LANES), section(".l2")));
-extern double CSR_IN_VECTOR[]
+extern float CSR_DATA[] __attribute__((aligned(4 * NR_LANES), section(".l2")));
+extern float CSR_IN_VECTOR[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
-extern double CSR_OUT_VECTOR[]
+extern float CSR_OUT_VECTOR[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
 
 

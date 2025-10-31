@@ -29,13 +29,13 @@
 #include "../common/printf.h"
 #endif
 #define SLICE_SIZE 128
-#define DATA_BYTE 8 // double type has 8 bytes
+#define DATA_BYTE 4 // float type has 8 bytes
 
 void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
-                    double *CSR_DATA, double *IN_VEC, double *OUT_VEC) {
+                    float *CSR_DATA, float *IN_VEC, float *OUT_VEC) {
   // Pre-carica la riga 0
   int32_t len   = CSR_PROW[1] - CSR_PROW[0];
-  double *data  = CSR_DATA  + CSR_PROW[0];
+  float *data  = CSR_DATA  + CSR_PROW[0];
   int32_t *index= CSR_INDEX + CSR_PROW[0];
 
   for (int i = 0; i < N_ROW; ++i) {
@@ -61,7 +61,7 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
     }
 
     // --- store risultato riga corrente ---
-    double tmp;
+    float tmp;
     asm volatile("vfmv.f.s %0, v16" : "=f"(tmp));
     OUT_VEC[i] = tmp;
 
@@ -75,15 +75,15 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
 }
 
 int spmv_verify(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
-                double *CSR_DATA, double *IN_VEC, double *OUT_VEC) {
+                float *CSR_DATA, float *IN_VEC, float *OUT_VEC) {
   for (int32_t i = 0; i < N_ROW; ++i) {
-    double res = OUT_VEC[i];
+    float res = OUT_VEC[i];
 
     int32_t len = CSR_PROW[i + 1] - CSR_PROW[i];
-    double *data = CSR_DATA + CSR_PROW[i];
+    float *data = CSR_DATA + CSR_PROW[i];
     int32_t *index = CSR_INDEX + CSR_PROW[i];
 
-    double golden = 0;
+    float golden = 0;
     for (int32_t j = 0; j < len; ++j) {
       int32_t idx = index[j] / DATA_BYTE;
       golden = golden + data[j] * IN_VEC[idx];

@@ -16,12 +16,12 @@ uint64_t NZ = NNZ_CONST;
 /* Array attesi dal kernel SPMV */
 int32_t CSR_PROW[R_CONST + 1];
 int32_t CSR_INDEX[NNZ_CONST];    // <- in byte!
-double  CSR_DATA [NNZ_CONST];
-double  CSR_IN_VECTOR [C_CONST];
-double  CSR_OUT_VECTOR[R_CONST]; // inizializzato a 0
+float  CSR_DATA [NNZ_CONST];
+float  CSR_IN_VECTOR [C_CONST];
+float  CSR_OUT_VECTOR[R_CONST]; // inizializzato a 0
 
 /* (Opzionale) vettore golden se vuoi confrontare */
-double  CSR_VERIFY[R_CONST];
+float  CSR_VERIFY[R_CONST];
 
 /* Inizializza tutto prima di main() */
 __attribute__((constructor))

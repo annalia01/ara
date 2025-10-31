@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
-#define ASSUME_ALIGNED_64(p) ((float*)__builtin_assume_aligned((p), 16))
+#define ASSUME_ALIGNED_64(p) ((float*)__builtin_assume_aligned((p), 64))
 
 
 

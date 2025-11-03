@@ -33,19 +33,19 @@ git submodule sync --recursive
 Applications developed for Ara  can also be compiled and simulated on gem5, a modular platform for computer-system architecture research.
 Each kernel inside the apps directory provides its own Makefile, which can be used to build the corresponding ELF binary for gem5 simulation.
 
-# Clone the gem5 repository 
+## Clone the gem5 repository 
 
 ```bash
 git clone https://github.com/gem5/gem5.git
 ```
 
-# Build gem5 for RISC-V
+## Build gem5 for RISC-V
 ```bash
 cd gem5
 scons build/RISCV/gem5.opt -j$(nproc)
 ```
 
-# Run the simulation
+## Run the simulation
 
 Once gem5 has been built and the ELF binary generated, you can launch the simulation from the Ara root directory:
 

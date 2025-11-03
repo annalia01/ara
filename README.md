@@ -28,6 +28,32 @@ If the repository path of any submodule changes, run the following command to ch
 ```bash
 git submodule sync --recursive
 ```
+## gem5
+
+Applications developed for Ara — including those using vector extensions — can also be compiled and simulated on gem5, a modular platform for computer-system architecture research.
+Each kernel inside the apps directory provides its own Makefile, which can be used to build the corresponding ELF binary for gem5 simulation.
+
+# Clone the gem5 repository 
+
+```bash
+git clone https://github.com/gem5/gem5.git
+```
+
+# Build gem5 for RISC-V
+```bash
+cd gem5
+scons build/RISCV/gem5.opt -j$(nproc)
+```
+
+# Run the simulation
+
+Once gem5 has been built and the ELF binary generated, you can launch the simulation from the Ara root directory:
+
+```bash
+/path/to/gem5/build/RISCV/gem5.opt run_rvv.py
+```
+By default, the run_rvv.py script contains the path of the ELF binary to run.
+To simulate a different application, you can edit the ELF path inside run_rvv.py.
 
 ## Toolchain
 

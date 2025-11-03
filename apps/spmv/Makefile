@@ -13,7 +13,7 @@ CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKE
 
 # ==== Target e sorgenti ====
 TARGET      := main.elf
-SRCS        := main.c src/fmatmul.c ../common/util.c inc/dataset.c
+SRCS        := main.c src/spmv.c ../common/util.c inc/dataset.c
 
 .PHONY: all run clean
 

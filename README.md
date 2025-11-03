@@ -30,7 +30,7 @@ git submodule sync --recursive
 ```
 ## gem5
 
-Applications developed for Ara — including those using vector extensions — can also be compiled and simulated on gem5, a modular platform for computer-system architecture research.
+Applications developed for Ara  can also be compiled and simulated on gem5, a modular platform for computer-system architecture research.
 Each kernel inside the apps directory provides its own Makefile, which can be used to build the corresponding ELF binary for gem5 simulation.
 
 # Clone the gem5 repository 

@@ -9,7 +9,7 @@ ABI         := lp64
 VLEN        ?= 256
 
 # ==== Flag di compilazione ====
-CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKE
+CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKEGEM
 
 # ==== Target e sorgenti ====
 TARGET      := main.elf

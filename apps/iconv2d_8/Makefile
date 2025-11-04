@@ -10,7 +10,7 @@ ABI         := lp64
 VLEN        ?= 256
 
 # ==== Flag di compilazione ====
-CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKE
+CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKEGEM
 
 # ==== Target e sorgenti ====
 TARGET      := main.elf
@@ -21,12 +21,10 @@ SRCS        := main.c src/iconv2d_3x3.c src/iconv2d_5x5.c src/iconv2d_7x7.c ../c
 all: $(TARGET)
 
 $(TARGET): $(SRCS)
-	@echo "→ Compilazione con flag SPIKE=1"
 	$(CC) $(CFLAGS) -o $@ $^
 
 
 run: $(TARGET)
-	@echo "→ Avvio simulazione Spike..."
 	$(SPIKE_BIN) --isa=$(MARCH) --varch="vlen:$(VLEN),elen:64" $(PK) ./$(TARGET)
 
 clean:

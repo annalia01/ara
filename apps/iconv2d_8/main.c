@@ -23,7 +23,7 @@
 #include "../common/runtime.h"
 
 #include "../common/util.h"
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #define NR_LANES 4
 #include  <stdio.h>
 #else
@@ -86,7 +86,7 @@ int main() {
 
   // Call the main kernel, and measure cycles
   init_dataset();
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t start_minstret = read_minstret();
   #endif
   start_timer();
@@ -99,7 +99,7 @@ int main() {
   else
     printf("Error: the filter size is different from 3 or 5 or 7.\n");
   stop_timer();
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t end_minstret = read_minstret();
   uint64_t delta_minstret = end_minstret - start_minstret;
   #endif
@@ -109,7 +109,7 @@ int main() {
   float utilization = 100 * performance / (2.0 * NR_LANES);
 
   printf("The execution took %d cycles.\n", runtime);
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
   #endif
   printf("The performance is %f OP/cycle (%f%% utilization).\n", performance,

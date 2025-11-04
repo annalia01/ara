@@ -24,7 +24,7 @@
 #include "../common/runtime.h"
 #include "../common/util.h"
 
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #include <stdio.h>
 #define NR_LANES 4
 #else
@@ -88,7 +88,7 @@ int main() {
     printf("\n");
 
     printf("Calculating fmatmul...\n");
-#ifdef SPIKE
+#ifdef SPIKEGEM
 int64_t start_minstret = read_minstret();
 #endif
 
@@ -98,7 +98,7 @@ fmatmul(c, a, b, s, s, s);
 stop_timer();
 
 // Leggi i CSR dopo l’esecuzione
-#ifdef SPIKE
+#ifdef SPIKEGEM
 int64_t end_minstret = read_minstret();
 uint64_t delta_minstret = end_minstret - start_minstret;
 #endif
@@ -111,7 +111,7 @@ float utilization = 100 * performance / (2.0 * NR_LANES);
 
 // Stampa risultati
 printf("The execution took %ld cycles (timer).\n", runtime);
-#ifdef SPIKE
+#ifdef SPIKEGEM
 printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
 #endif
 printf("The performance is %f FLOP/cycle (%f%% utilization).\n",

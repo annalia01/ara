@@ -23,9 +23,9 @@
 #include "../common/runtime.h"
 #include "../common/util.h"
 
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #include <stdio.h>
-#define NR_LANES 4
+#define NR_LANES 8
 #else
 #include "../common/printf.h"
 #endif
@@ -74,7 +74,7 @@ int main() {
   printf("\n");
 
   printf("calculating ... \n");
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t start_minstret = read_minstret();
   #endif
   start_timer();
@@ -82,7 +82,7 @@ int main() {
                  CSR_OUT_VECTOR);
   stop_timer();
 // Leggi i CSR dopo l’esecuzione
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t end_minstret = read_minstret();
   uint64_t delta_minstret = end_minstret - start_minstret;
   #endif
@@ -92,7 +92,7 @@ int main() {
   int64_t runtime = get_timer();
   float performance = 2.0 * NZ / runtime;
   float utilization = 100 * performance / (2.0 * NR_LANES);
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
   #endif
   printf("The execution took %d cycles.\n", runtime);

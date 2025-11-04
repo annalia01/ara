@@ -23,7 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #include <stdio.h>
 #else
 #include "../common/printf.h"

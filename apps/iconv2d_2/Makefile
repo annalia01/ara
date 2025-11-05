@@ -13,7 +13,7 @@ CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKEGEM
 
 # ==== Target e sorgenti ====
 TARGET      := main.elf
-SRCS        := main.c src/iconv2d_3x3.c src/iconv2d_5x5.c src/iconv2d_7x7.c ../common/util.c inc/dataset.c
+SRCS        := main.c src/iconv2d_3x3.c ../common/util.c inc/dataset.c
 
 .PHONY: all run clean
 

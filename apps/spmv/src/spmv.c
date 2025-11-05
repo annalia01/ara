@@ -23,13 +23,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #include <stdio.h>
-#else
-#include "../common/printf.h"
+#else 
+#include "../../common/printf.h"
 #endif
+
+
 #define SLICE_SIZE 128
-#define DATA_BYTE 4 // float type has 8 bytes
+#define DATA_BYTE 4 // double type has 8 bytes
 
 void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
                     float *CSR_DATA, float *IN_VEC, float *OUT_VEC) {
@@ -40,13 +42,13 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
 
   for (int i = 0; i < N_ROW; ++i) {
     // --- reset accumulatore ---
-    asm volatile("vsetvli zero, %0, e32, m4, ta, ma" :: "r"(1));
+    asm volatile("vsetvli zero, %0, e32, m2, ta, ma" :: "r"(1));
     asm volatile("vmv.v.i v16, 0");
 
-    // --- loop vettoriale dinamico ---
+
     while (len > 0) {
       size_t vl;
-      asm volatile("vsetvli %0, %1, e32, m4, ta, ma"
+      asm volatile("vsetvli %0, %1, e32, m2, ta, ma"
                    : "=r"(vl) : "r"(len));
 
       asm volatile("vle32.v v4, (%0)" :: "r"(data));   // carica valori
@@ -60,7 +62,6 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
       len   -= vl;
     }
 
-    // --- store risultato riga corrente ---
     float tmp;
     asm volatile("vfmv.f.s %0, v16" : "=f"(tmp));
     OUT_VEC[i] = tmp;
@@ -87,9 +88,9 @@ int spmv_verify(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
     for (int32_t j = 0; j < len; ++j) {
       int32_t idx = index[j] / DATA_BYTE;
       golden = golden + data[j] * IN_VEC[idx];
-      // printf("index:%d, data: %f, vec: %f\n", idx, data[j], IN_VEC[idx]);
+      
     }
-    if ((float)golden != (float)res) {
+    if ((int32_t)golden != (int32_t)res) {
       printf("Sorry, wrong value! at index %d, result = %f, golden = %f \n", i,
              res, golden);
       return i;

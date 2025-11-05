@@ -23,16 +23,16 @@
 #include "../common/runtime.h"
 #include "../common/util.h"
 
-#ifdef SPIKE
+#ifdef SPIKEGEM
 #include <stdio.h>
-#define NR_LANES 4
-#else
+#define NR_LANES 8
+#else 
 #include "../common/printf.h"
-#endif
+#endif 
 
-extern uint64_t R;
-extern uint64_t C;
-extern uint64_t NZ;
+extern uint32_t R;
+extern uint32_t C;
+extern uint32_t NZ;
 
 extern int32_t CSR_PROW[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
@@ -43,6 +43,7 @@ extern float CSR_IN_VECTOR[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
 extern float CSR_OUT_VECTOR[]
     __attribute__((aligned(4 * NR_LANES), section(".l2")));
+
 
 
 static inline uint64_t read_minstret(void) {
@@ -58,7 +59,7 @@ int main() {
   printf("==========\n");
   printf("\n");
   printf("\n");
-
+  
   double density = ((double)NZ) / (R * C);
   double nz_per_row = ((double)NZ) / R;
 
@@ -68,32 +69,30 @@ int main() {
   printf(
       "Calculating a (%d x %d) x %d sparse matrix vector multiplication...\n",
       R, C, C);
-  printf("CSR format with %d nozeros: %f density, %f nonzeros per row \n", NZ,
+  printf("CSR format with %d nozeros: %d density, %d nonzeros per row \n", NZ,
          density, nz_per_row);
   printf(
       "-------------------------------------------------------------------\n");
   printf("\n");
 
   printf("calculating ... \n");
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t start_minstret = read_minstret();
-  #endif
+  #endif 
   start_timer();
   spmv_csr_idx32(R, CSR_PROW, CSR_INDEX, CSR_DATA, CSR_IN_VECTOR,
                  CSR_OUT_VECTOR);
   stop_timer();
-// Leggi i CSR dopo l’esecuzione
-  #ifdef SPIKE
+  #ifdef SPIKEGEM
   uint64_t end_minstret = read_minstret();
   uint64_t delta_minstret = end_minstret - start_minstret;
   #endif
-
-
   // Metrics
   int64_t runtime = get_timer();
   float performance = 2.0 * NZ / runtime;
   float utilization = 100 * performance / (2.0 * NR_LANES);
-  #ifdef SPIKE
+    
+  #ifdef SPIKEGEM
   printf("Instructions retired (CSR minstret): %lu\n", delta_minstret);
   #endif
   printf("The execution took %d cycles.\n", runtime);

@@ -24,7 +24,7 @@
 
 #include "../common/util.h"
 #ifdef SPIKEGEM
-#define NR_LANES 4
+#define NR_LANES 8
 #include  <stdio.h>
 #else
 #include "../common/printf.h"

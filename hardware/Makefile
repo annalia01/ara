@@ -48,18 +48,6 @@ veril_library  ?= $(buildpath)/verilator
 veril_path     ?= $(abspath $(INSTALL_DIR)/verilator/bin)
 # verilator top-level
 veril_top      ?= ara_tb_verilator
-# Top level module to compile
-top_level      ?= ara_tb
-# Questa version
-ifeq ($(vcd_dump), 1)
-  questa_version ?= 2019.3
-else
-  questa_version ?= 2021.3
-endif
-# QuestaSim command
-questa_cmd     ?= questa-$(questa_version)
-# QuestaSim arguments
-questa_args    ?=
 # Path to the binaries
 app_path       ?= $(abspath $(ROOT_DIR)/../apps/bin)
 # Path to ideal dispatcher vtraces
@@ -77,12 +65,6 @@ ifeq ($(vcd_dump), 1)
   bender_defs += --define VCD_DUMP=1 --define VCD_PATH=$(vcd_path)
 endif
 
-# Check if the specified QuestaSim version exists
-ifeq (, $(shell which $(questa_cmd)))
-  # Spaces are needed for indentation here!
-  $(warning "Specified QuestaSim version ($(questa_cmd)) not found in PATH $(PATH)")
-  questa_cmd =
-endif
 
 questa_args += +UVM_NO_RELNOTES
 ifdef app
@@ -148,28 +130,6 @@ lib: $(buildpath) $(buildpath)/$(library)
 $(buildpath)/$(library):
 	cd $(buildpath) && $(questa_cmd) vlib $(library) && $(questa_cmd) vmap $(library) $(library)
 
-# Compilation
-.PHONY: compile
-compile: dpi lib $(buildpath) bender $(buildpath)/compile_$(config).tcl
-$(buildpath)/compile_$(config).tcl: $(config_file) Makefile ../Bender.yml $(shell find src -type f) $(shell find ../config -type f) $(shell find include -type f) $(shell find tb -type f) $(shell find deps -type f)
-	$(BENDER) script vsim --vlog-arg="$(vlog_args)" $(bender_targs_simc) $(bender_defs) > $(buildpath)/compile_$(config).tcl
-	echo "exit" >> $(buildpath)/compile_$(config).tcl
-	cd $(buildpath) && $(questa_cmd) vsim -work $(library) -c -do compile_$(config).tcl
-	# Rename the file if compilation did not succeed
-	if [ `cat $(buildpath)/transcript | grep "\*\* Error" | wc -l` -ne 0 ]; then mv $(buildpath)/compile_$(config).tcl $(buildpath)/compile_$(config).tcl.ERROR; fi
-
-# Simulation
-.PHONY: sim
-sim: compile
-	cd $(buildpath) && \
-	$(questa_cmd) vsim $(questa_args) $(library).$(top_level) -do ../scripts/run$(ideal).tcl
-	./scripts/return_status.sh $(buildpath)/transcript
-
-.PHONY: simc
-simc: compile
-	cd $(buildpath) && \
-	$(questa_cmd) vsim -c $(questa_args) $(library).$(top_level) -do "run -a"
-	./scripts/return_status.sh $(buildpath)/transcript
 
 # RISC-V Tests simulation
 APPS_DIR := $(abspath $(ROOT_DIR)/../apps)

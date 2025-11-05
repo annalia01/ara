@@ -28,12 +28,44 @@ If the repository path of any submodule changes, run the following command to ch
 ```bash
 git submodule sync --recursive
 ```
+## RISC-V GNU Toolchain
+
+To build the applications that will be executed on Spike and gem5, a RISC-V GNU toolchain is required.
+
+```bash
+#Download sources directory
+export DOWNLOAD_DIR=$(pwd)/downloads
+
+#Installation directory
+export INSTALL_DIR=$HOME/RISC-V/rv64
+
+#Create directories
+mkdir -p $DOWNLOAD_DIR
+mkdir -p $INSTALL_DIR
+
+#Clone the RISC-V GNU toolchain
+cd $DOWNLOAD_DIR
+git clone https://github.com/riscv/riscv-gnu-toolchain.git --depth 1
+cd riscv-gnu-toolchain
+
+#Initialize required submodules
+git submodule update --init --recursive --depth 1 binutils gcc glibc dejagnu newlib gdb
+
+#Build and install
+mkdir build && cd build
+../configure --prefix=$INSTALL_DIR/gnu-toolchain \
+             --with-arch=rv64gcv_zicsr_zifencei \
+             --with-abi=lp64
+
+make -j$(nproc)
+make install
+```
 
 ## Spike
 
 Ara requires an updated version of Spike, the RISC-V ISA simulator, with support for the Vector Extension.
 The version of Spike built through the provided Makefile already includes a custom patch that enables dynamic modification of VLEN at runtime.
-This patched version of Spike will automatically be used for all simulations, as its path is already configured in the top-level Makefile.
+This patched version of Spike will automatically be used for all simulations.
 To build the patched Spike version, run:
 
 ```bash

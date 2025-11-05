@@ -38,8 +38,6 @@ endif
 # build path
 buildpath      ?= build
 resultpath     ?= results
-# questa library
-library        ?= work
 # dpi library
 dpi_library    ?= work-dpi
 # verilator library
@@ -65,26 +63,9 @@ ifeq ($(vcd_dump), 1)
   bender_defs += --define VCD_DUMP=1 --define VCD_PATH=$(vcd_path)
 endif
 
-
-questa_args += +UVM_NO_RELNOTES
-ifdef app
-ifeq ($(ideal_dispatcher), 1)
-	preload ?= "$(app_path)/$(app).ideal"
-else
-	preload ?= "$(app_path)/$(app)"
-endif
-endif
-ifdef preload
-	questa_args += +PRELOAD=$(preload)
-endif
-questa_args += -sv_lib $(dpi_library)/ara_dpi -work $(library) -voptargs=+acc
-questa_args += -suppress vsim-3009 -suppress vopt-7033
-
 # DPI source files
 dpi   := $(patsubst tb/dpi/%.cc,$(buildpath)/$(dpi_library)/%.o,$(wildcard tb/dpi/*.cc))
 
-vlog_args += -suppress vlog-2583 -suppress vlog-13314 -suppress vlog-13233
-vlog_args += -work $(library)
 
 # Bender
 # Defines
@@ -123,13 +104,6 @@ checkout: $(BENDER)
 .PHONY: apply-patches
 apply-patches: patches
 	cd deps/tech_cells_generic && git apply ../../patches/0001-tech-cells-generic-sram.patch
-
-# Library
-.PHONY: lib
-lib: $(buildpath) $(buildpath)/$(library)
-$(buildpath)/$(library):
-	cd $(buildpath) && $(questa_cmd) vlib $(library) && $(questa_cmd) vmap $(library) $(library)
-
 
 # RISC-V Tests simulation
 APPS_DIR := $(abspath $(ROOT_DIR)/../apps)

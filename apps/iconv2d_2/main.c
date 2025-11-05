@@ -87,14 +87,7 @@ int main() {
   uint64_t start_minstret = read_minstret();
   #endif
   start_timer();
-  if (F == 3)
     iconv2d_3x3(o, i, f, M, N, F);
-  else if (F == 5)
-    iconv2d_5x5(o, i, f, M, N, F);
-  else if (F == 7)
-    iconv2d_7x7(o, i, f, M, N, F);
-  else
-    printf("Error: the filter size is different from 3 or 5 or 7.\n");
   stop_timer();
   #ifdef SPIKEGEM
   uint64_t end_minstret = read_minstret();

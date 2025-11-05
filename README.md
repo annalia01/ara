@@ -233,11 +233,10 @@ make verilate
 app=hello_world make simv
 ```
 
-Alternatively, you can also use the `riscv_tests` target at Ara's top-level Makefile to both compile the RISC-V tests and run their simulation.
 
 ### Traces
 
-Add `trace=1` to the `verilate`, `simv`, and `riscv_tests_simv` commands to generate waveform traces in the `fst` format.
+Add `trace=1` to the `verilate` commands to generate waveform traces in the `fst` format.
 You can use `gtkwave` to open such waveforms.
 
 

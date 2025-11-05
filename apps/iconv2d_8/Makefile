@@ -1,8 +1,8 @@
 
 # ==== Toolchain e percorsi ====
 CC          := riscv64-unknown-elf-gcc
-SPIKE_BIN   := /home/annalia/DoE/install/riscv-isa-sim/bin/spike
-PK          := /home/annalia/RISC-V/rv64/pk/riscv64-unknown-elf/bin/pk
+SPIKE_BIN   := ../../install/riscv-isa-sim/bin/spike
+PK          := $(HOME)/RISC-V/rv64/pk/riscv64-unknown-elf/bin/pk
 
 # ==== ISA/ABI ====
 MARCH       := rv64gcv_zicsr_zicntr
@@ -14,7 +14,7 @@ CFLAGS      := -O2 -march=$(MARCH) -mabi=$(ABI) -DSPIKEGEM
 
 # ==== Target e sorgenti ====
 TARGET      := main.elf
-SRCS        := main.c src/iconv2d_3x3.c src/iconv2d_5x5.c src/iconv2d_7x7.c ../common/util.c inc/dataset.c
+SRCS        := main.c src/iconv2d_3x3.c ../common/util.c inc/dataset.c
 
 .PHONY: all run clean
 

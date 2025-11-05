@@ -1,7 +1,7 @@
 # ==== Toolchain e percorsi ====
 CC          := riscv64-unknown-elf-gcc
-SPIKE_BIN   := /home/annalia/DoE/install/riscv-isa-sim/bin/spike
-PK          := /home/annalia/RISC-V/rv64/pk/riscv64-unknown-elf/bin/pk
+SPIKE_BIN   := ../../install/riscv-isa-sim/bin/spike
+PK          := $(HOME)/RISC-V/rv64/pk/riscv64-unknown-elf/bin/pk
 
 # ==== ISA/ABI ====
 MARCH       := rv64gcv_zicsr_zicntr

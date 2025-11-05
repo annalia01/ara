@@ -62,9 +62,8 @@ git-submodules:
 .PHONY: git-submodules
 all: toolchains riscv-isa-sim verilator
 
-# GCC and LLVM Toolchains
-.PHONY: toolchains toolchain-gcc toolchain-llvm toolchain-llvm-main toolchain-llvm-newlib toolchain-llvm-rt
-toolchains: toolchain-gcc toolchain-llvm
+# LLVM Toolchains
+.PHONY:  toolchain-llvm toolchain-llvm-main toolchain-llvm-newlib toolchain-llvm-rt
 
 toolchain-llvm: toolchain-llvm-main toolchain-llvm-newlib toolchain-llvm-rt
 

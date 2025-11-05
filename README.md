@@ -28,6 +28,64 @@ If the repository path of any submodule changes, run the following command to ch
 ```bash
 git submodule sync --recursive
 ```
+
+## Spike
+
+Ara requires an updated version of Spike, the RISC-V ISA simulator, with support for the Vector Extension.
+The version of Spike built through the provided Makefile already includes a custom patch that enables dynamic modification of VLEN at runtime.
+This patched version of Spike will automatically be used for all simulations, as its path is already configured in the top-level Makefile.
+To build the patched Spike version, run:
+
+```bash
+make riscv-isa-sim
+```
+## Proxy Kernel
+
+Spike requires the Proxy Kernel (pk) to run bare-metal RISC-V programs.
+Follow the steps below to install it.
+
+```bash
+# Download sources directory
+export DOWNLOAD_DIR=$(pwd)/downloads
+
+# Installation directory
+export INSTALL_DIR=$HOME/RISC-V/rv64
+
+# Create directories
+mkdir -p $DOWNLOAD_DIR
+mkdir -p $INSTALL_DIR
+
+# Clone the riscv-pk repository
+cd $DOWNLOAD_DIR
+git clone https://github.com/riscv/riscv-pk.git --depth 1
+cd riscv-pk
+
+# Build and install pk
+mkdir build && cd build
+
+# Add the RISC-V GCC toolchain to PATH
+export PATH=$INSTALL_DIR/gnu-toolchain/bin:$PATH
+
+# Configure and compile (zifencei_zicsr are necessary for GCC>=12)
+../configure --prefix=$INSTALL_DIR/pk \
+    --host=riscv64-unknown-elf \
+    --with-arch=rv64gcv_zifencei_zicsr
+
+make
+make install
+
+```
+## Run the simulation with Spike
+```bash
+cd apps/
+cd name_of_kernel/
+#To build Applications
+make
+#To run Applications
+make run
+```
+
+
 ## gem5
 
 Applications developed for Ara  can also be compiled and simulated on gem5, a modular platform for computer-system architecture research.
@@ -47,7 +105,14 @@ scons build/RISCV/gem5.opt -j$(nproc)
 
 ## Run the simulation
 
-Once gem5 has been built and the ELF binary generated, you can launch the simulation from the Ara root directory:
+Once gem5 has been built you can build the Applications as following:
+```bash
+cd apps/
+cd name_of_kernel/
+#To build Applications
+make
+```
+Then, you can launch the simulation from the Ara root directory:
 
 ```bash
 /path/to/gem5/build/RISCV/gem5.opt run_rvv.py

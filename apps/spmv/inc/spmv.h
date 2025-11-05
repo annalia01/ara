@@ -1,4 +1,3 @@
-
 // Copyright 2022 ETH Zurich and University of Bologna.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -27,8 +26,6 @@ void spmv_csr_idx32(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
 
 int spmv_verify(int32_t N_ROW, int32_t *CSR_PROW, int32_t *CSR_INDEX,
                 float *CSR_DATA, float *IN_VEC, float *OUT_VEC);
-                
-
                 
 
 #endif
